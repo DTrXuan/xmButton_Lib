@@ -1,6 +1,21 @@
 #include "multi_button.h"
 #include <string.h>
 
+// Định nghĩa hàm lấy thời gian (milliseconds)
+uint32_t platform_get_time_ms(void) {
+    // STM32: return HAL_GetTick();
+    // ESP32: return xTaskGetTickCount() * portTICK_PERIOD_MS;
+    // AVR: return millis(); // Nếu dùng Arduino framework
+    return HAL_GetTick();
+}
+
+// Định nghĩa hàm delay
+void platform_delay_ms(uint32_t ms) {
+    // STM32: HAL_Delay(ms);
+    // ESP32: vTaskDelay(ms / portTICK_PERIOD_MS);
+    // Non-blocking delay implementation
+}
+
 void button_init(button_handle_t* button,
                 button_read_pin_t read_func,
                 void* context,
@@ -117,11 +132,15 @@ void button_update(button_handle_t* button) {
 
                 if (button->ultra_long_pressed) {
                     button->ultra_long_pressed = false;
-                    button_trigger_event(button, BUTTON_EVENT_ULTRA_LONG_PRESS_END);
+                    if (button->event_callbacks[BUTTON_EVENT_ULTRA_LONG_PRESS_END]) {
+                        button_trigger_event(button, BUTTON_EVENT_ULTRA_LONG_PRESS_END);
+                    }
                 }
                 else if (button->long_pressed) {
                     button->long_pressed = false;
-                    button_trigger_event(button, BUTTON_EVENT_LONG_PRESS_END);
+                    if (button->event_callbacks[BUTTON_EVENT_LONG_PRESS_END]) {
+                        button_trigger_event(button, BUTTON_EVENT_LONG_PRESS_END);
+                    }
                 }
                 else if (press_duration >= button->config.debounce_time_ms) {
                     button_trigger_event(button, BUTTON_EVENT_RELEASED);
@@ -130,26 +149,34 @@ void button_update(button_handle_t* button) {
         }
     }
 
-    // Check for long press events
+    // Check for long press events (only if callback attached)
     if (button->pressed) {
         uint32_t press_duration = current_time - button->last_press_time;
 
         // Ultra long press
-        if (!button->ultra_long_pressed && press_duration >= button->config.ultra_long_press_time_ms) {
+        if (!button->ultra_long_pressed &&
+            press_duration >= button->config.ultra_long_press_time_ms &&
+            button->event_callbacks[BUTTON_EVENT_ULTRA_LONG_PRESS_START]) {
+
             button->ultra_long_pressed = true;
             button_trigger_event(button, BUTTON_EVENT_ULTRA_LONG_PRESS_START);
         }
         // Long press
-        else if (!button->long_pressed && press_duration >= button->config.long_press_time_ms) {
+        else if (!button->long_pressed &&
+                 press_duration >= button->config.long_press_time_ms &&
+                 button->event_callbacks[BUTTON_EVENT_LONG_PRESS_START]) {
+
             button->long_pressed = true;
             button_trigger_event(button, BUTTON_EVENT_LONG_PRESS_START);
         }
 
         // Hold events
-        if (button->ultra_long_pressed) {
+        if (button->ultra_long_pressed &&
+            button->event_callbacks[BUTTON_EVENT_ULTRA_LONG_PRESS_HOLD]) {
             button_trigger_event(button, BUTTON_EVENT_ULTRA_LONG_PRESS_HOLD);
         }
-        else if (button->long_pressed) {
+        else if (button->long_pressed &&
+                 button->event_callbacks[BUTTON_EVENT_LONG_PRESS_HOLD]) {
             button_trigger_event(button, BUTTON_EVENT_LONG_PRESS_HOLD);
         }
     }

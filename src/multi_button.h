@@ -17,6 +17,8 @@ extern "C" {
 #define BUTTON_DELAY_MS(ms)
 #endif
 
+#define BUTTON_GET_TIME() platform_get_time_ms()
+#define BUTTON_DELAY_MS(ms) platform_delay_ms(ms)
 // Button events
 typedef enum {
     BUTTON_EVENT_PRESSED,
@@ -100,7 +102,7 @@ struct button_handle_t {
 
 // Default configuration
 #define BUTTON_CONFIG_DEFAULT { \
-    .debounce_time_ms = 25, \
+    .debounce_time_ms = 50, \
     .click_time_ms = 400, \
     .long_press_time_ms = 1000, \
     .ultra_long_press_time_ms = 3000, \
