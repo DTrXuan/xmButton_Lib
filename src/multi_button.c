@@ -99,14 +99,14 @@ void button_update(button_handle_t* button) {
     uint32_t time_since_change = current_time - button->last_change_time;
 
     if (time_since_change >= button->config.debounce_time_ms) {
-        if (raw_state != button->debounced_state) {
+
+    	//State change confirmed.
+    	if (raw_state != button->debounced_state) {
             button->debounced_state = raw_state;
 
             if (button->debounced_state) { // Button pressed
                 button->pressed = true;
                 button->last_press_time = current_time;
-                button->long_pressed = false;
-                button->ultra_long_pressed = false;
 
                 // Check for multi-click sequence
                 if ((current_time - button->last_release_time) < button->config.multi_click_interval_ms) {
@@ -116,7 +116,7 @@ void button_update(button_handle_t* button) {
                 }
 
                 // Trigger pressed event
-                button_trigger_event(button, BUTTON_EVENT_PRESSED);
+                button_trigger_event(button, BUTTON_EVENT_FALLING_EDGE);
 
                 // Check for sequence start
                 if (button->config.enable_advanced_events && button->click_count == 1) {
@@ -130,46 +130,27 @@ void button_update(button_handle_t* button) {
                 button->last_release_time = current_time;
                 uint32_t press_duration = current_time - button->last_press_time;
 
-                if (button->ultra_long_pressed) {
-                    button->ultra_long_pressed = false;
-                    if (button->event_callbacks[BUTTON_EVENT_ULTRA_LONG_PRESS_END]) {
-                        button_trigger_event(button, BUTTON_EVENT_ULTRA_LONG_PRESS_END);
-                    }
-                }
-                else if (button->long_pressed) {
-                    button->long_pressed = false;
-                    if (button->event_callbacks[BUTTON_EVENT_LONG_PRESS_END]) {
-                        button_trigger_event(button, BUTTON_EVENT_LONG_PRESS_END);
-                    }
-                }
-                else if (press_duration >= button->config.debounce_time_ms) {
+                if (press_duration >= button->config.debounce_time_ms) {
                     button_trigger_event(button, BUTTON_EVENT_RELEASED);
                 }
             }
         }
+    	else //Press button
+    	{
+    		if (button->debounced_state) { // Button pressed
+    			uint32_t press_duration = current_time - button->last_press_time;
+
+    			button_trigger_event(button, BUTTON_EVENT_PRESSED);
+
+    			if(press_duration > button->config.hold_time_ms)
+    			{
+    				button_trigger_event(button, BUTTON_EVENT_HOLD);
+    			}
+
+    		}
+    	}
     }
 
-    // Check for long press events (only if callback attached)
-    if (button->pressed) {
-        uint32_t press_duration = current_time - button->last_press_time;
-
-        // Ultra long press
-        if (!button->ultra_long_pressed &&
-            press_duration >= button->config.ultra_long_press_time_ms &&
-            button->event_callbacks[BUTTON_EVENT_ULTRA_LONG_PRESS_START]) {
-
-            button->ultra_long_pressed = true;
-            button_trigger_event(button, BUTTON_EVENT_ULTRA_LONG_PRESS_START);
-        }
-        // Long press
-        else if (!button->long_pressed &&
-                 press_duration >= button->config.long_press_time_ms &&
-                 button->event_callbacks[BUTTON_EVENT_LONG_PRESS_START]) {
-
-            button->long_pressed = true;
-            button_trigger_event(button, BUTTON_EVENT_LONG_PRESS_START);
-        }
-    }
 
     // Check for click events after release timeout
     if (!button->pressed && button->click_count > 0) {
@@ -233,9 +214,6 @@ bool button_is_pressed(const button_handle_t* button) {
     return button ? button->pressed : false;
 }
 
-bool button_is_long_pressed(const button_handle_t* button) {
-    return button ? button->long_pressed : false;
-}
 
 void button_set_user_data(button_handle_t* button, void* user_data) {
     if (button) {

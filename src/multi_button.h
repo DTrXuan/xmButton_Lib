@@ -21,15 +21,13 @@ extern "C" {
 #define BUTTON_DELAY_MS(ms) platform_delay_ms(ms)
 // Button events
 typedef enum {
+	BUTTON_EVENT_FALLING_EDGE,
     BUTTON_EVENT_PRESSED,
+	BUTTON_EVENT_HOLD, //event trigger after a time hold a button
     BUTTON_EVENT_RELEASED,
     BUTTON_EVENT_CLICK,
     BUTTON_EVENT_DOUBLE_CLICK,
     BUTTON_EVENT_TRIPLE_CLICK,
-    BUTTON_EVENT_LONG_PRESS_START,
-    BUTTON_EVENT_LONG_PRESS_END,
-    BUTTON_EVENT_ULTRA_LONG_PRESS_START,
-    BUTTON_EVENT_ULTRA_LONG_PRESS_END,
     BUTTON_EVENT_SEQUENCE_START,
     BUTTON_EVENT_SEQUENCE_COMPLETE,
     BUTTON_EVENT_COMBO_START,
@@ -44,9 +42,7 @@ typedef enum {
 // Button configuration
 typedef struct {
     uint32_t debounce_time_ms;
-    uint32_t click_time_ms;
-    uint32_t long_press_time_ms;
-    uint32_t ultra_long_press_time_ms;
+    uint32_t hold_time_ms;
     uint32_t multi_click_interval_ms;
     uint32_t sequence_timeout_ms;
     uint8_t multi_click_count;
@@ -82,8 +78,6 @@ struct button_handle_t {
     bool last_raw_state;
     bool debounced_state;
     bool pressed;
-    bool long_pressed;
-    bool ultra_long_pressed;
     bool in_sequence;
 
     // Individual event callbacks
@@ -101,9 +95,7 @@ struct button_handle_t {
 // Default configuration
 #define BUTTON_CONFIG_DEFAULT { \
     .debounce_time_ms = 50, \
-    .click_time_ms = 400, \
-    .long_press_time_ms = 1000, \
-    .ultra_long_press_time_ms = 3000, \
+    .hold_time_ms = 500, \
     .multi_click_interval_ms = 300, \
     .sequence_timeout_ms = 2000, \
     .multi_click_count = 3, \
