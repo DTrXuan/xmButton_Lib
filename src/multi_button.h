@@ -21,9 +21,8 @@ extern "C" {
 #define BUTTON_DELAY_MS(ms) platform_delay_ms(ms)
 // Button events
 typedef enum {
-	BUTTON_EVENT_FALLING_EDGE,
     BUTTON_EVENT_PRESSED,
-	BUTTON_EVENT_HOLD, //event trigger after a time hold a button
+	BUTTON_EVENT_HOLD,
     BUTTON_EVENT_RELEASED,
     BUTTON_EVENT_CLICK,
     BUTTON_EVENT_DOUBLE_CLICK,
@@ -42,7 +41,7 @@ typedef enum {
 // Button configuration
 typedef struct {
     uint32_t debounce_time_ms;
-    uint32_t hold_time_ms;
+    uint32_t hold_interval_ms;
     uint32_t multi_click_interval_ms;
     uint32_t sequence_timeout_ms;
     uint8_t multi_click_count;
@@ -95,7 +94,7 @@ struct button_handle_t {
 // Default configuration
 #define BUTTON_CONFIG_DEFAULT { \
     .debounce_time_ms = 50, \
-    .hold_time_ms = 500, \
+    .hold_interval_ms = 300, \
     .multi_click_interval_ms = 300, \
     .sequence_timeout_ms = 2000, \
     .multi_click_count = 3, \

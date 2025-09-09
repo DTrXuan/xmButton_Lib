@@ -116,7 +116,7 @@ void button_update(button_handle_t* button) {
                 }
 
                 // Trigger pressed event
-                button_trigger_event(button, BUTTON_EVENT_FALLING_EDGE);
+                button_trigger_event(button, BUTTON_EVENT_PRESSED);
 
                 // Check for sequence start
                 if (button->config.enable_advanced_events && button->click_count == 1) {
@@ -135,18 +135,17 @@ void button_update(button_handle_t* button) {
                 }
             }
         }
-    	else //Press button
+    	else //State no change
     	{
-    		if (button->debounced_state) { // Button pressed
+    		if (button->debounced_state) { // Button is hold
     			uint32_t press_duration = current_time - button->last_press_time;
 
-    			button_trigger_event(button, BUTTON_EVENT_PRESSED);
-
-    			if(press_duration > button->config.hold_time_ms)
+    			if(press_duration > button->config.hold_interval_ms)
     			{
-    				button_trigger_event(button, BUTTON_EVENT_HOLD);
+    				button->last_press_time = current_time;
+    				button_trigger_event(button, BUTTON_EVENT_PRESSED);
+//    				button_trigger_event(button, BUTTON_EVENT_HOLD);
     			}
-
     		}
     	}
     }

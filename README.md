@@ -3,6 +3,10 @@
 ## 🎯 Giới Thiệu
 Thư viện Multi-Button là một thư viện xử lý nút nhấn đa năng, hỗ trợ nhiều loại sự kiện và dễ dàng port cho nhiều loại MCU khác nhau.
 
+## 📃TODO
+1. Update multiple/sequence logic, them timeout cho toan bo sequence de detect final, tranh thuc hien het event.
+2. update lai readme.md
+
 ## 📦 Cài Đặt
 
 ### 1. Thêm Files Vào Project
@@ -403,6 +407,7 @@ void check_combo(button_combo_t* combo) {
 ```
 Raw Input → Debounce → State Machine → Event Detection → Callback Execution
     │          │            │               │                  │
+    │          │            ├→ Pressed ─────┼→ BUTTON_EVENT_FALING_EDGE
     │          │            ├→ Pressed ─────┼→ BUTTON_EVENT_PRESSED
     │          │            ├→ Released ────┼→ BUTTON_EVENT_RELEASED  
     │          │            ├→ Click ───────┼→ BUTTON_EVENT_CLICK
