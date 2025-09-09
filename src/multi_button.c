@@ -169,16 +169,6 @@ void button_update(button_handle_t* button) {
             button->long_pressed = true;
             button_trigger_event(button, BUTTON_EVENT_LONG_PRESS_START);
         }
-
-        // Hold events
-        if (button->ultra_long_pressed &&
-            button->event_callbacks[BUTTON_EVENT_ULTRA_LONG_PRESS_HOLD]) {
-            button_trigger_event(button, BUTTON_EVENT_ULTRA_LONG_PRESS_HOLD);
-        }
-        else if (button->long_pressed &&
-                 button->event_callbacks[BUTTON_EVENT_LONG_PRESS_HOLD]) {
-            button_trigger_event(button, BUTTON_EVENT_LONG_PRESS_HOLD);
-        }
     }
 
     // Check for click events after release timeout
